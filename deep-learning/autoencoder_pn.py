@@ -178,5 +178,5 @@ if __name__=="__main__":
 
     print("Train Data Shape",train_data_arr.shape)
     print("Validation Data Shape",val_data_arr.shape)
-    train_autoencoder(train_data_arr,8,50,768,128,save_interval=50, valid_data=val_data_arr,
+    train_autoencoder(train_data_arr,8,1,768,128,save_interval=50, valid_data=val_data_arr,
                     model_name="microsoft/graphcodebert-base",model_shorthand="gc")

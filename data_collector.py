@@ -4,8 +4,9 @@ from pymongo import MongoClient
 from utils.RepoDownload import CloneRepo
 from refactoring_identifier.RefMiner import RefMiner
 from utils.file_folder_remover import Remover
-from utils.method_code_extractor import MethodExtractor
+from utils.recreate_db_with_messages import MethodExtractor
 from joblib import Parallel, delayed
+import pandas as pd
 
 
 # Define the number of workers to use for parallel processing
@@ -14,10 +15,14 @@ NUM_WORKERS = 6
 #Lock
 lock = Lock()
 
-# Function to clone a Git repo, run a Java program, and parse the output
+# Function to clone a Git repo, run a Java program, and parse the output for one repo
 def process_repo(repo_details):
 
     print("Start analyzing for repo - "+repo_details[0])
+    positive_cases=repo_details[2]
+    if (len(positive_cases)==0):
+        return
+    
     #Clone the repo
     try:
         cloned_path = CloneRepo(repo_details[0], repo_details[1]).clone_repo()
@@ -34,7 +39,7 @@ def process_repo(repo_details):
 
     #Prase the Json and extract the methods
     try:
-        me_obj = MethodExtractor(cloned_path,ref_output_path)
+        me_obj = MethodExtractor(cloned_path,ref_output_path,positive_cases)
         parsed_json_dict = me_obj.json_parser()
         pos_method_body_list, neg_method_body_list = me_obj.extract_method_body(parsed_json_dict)
         Remover(cloned_path).remove_folder()
@@ -78,9 +83,13 @@ if __name__=="__main__":
     input_file = sys.argv[1]
     output_file_name = sys.argv[2]
 
-    with open(input_file,"r") as f:
-        reader = csv.reader(f)
-        repo_details = [(row[0],row[1]) for row in reader]
+    jsonObj = pd.read_json(path_or_buf=input_file, lines=True)
+    repo_details = [(row['repo_name'], row['repo_url'], row['positive_case_methods']) for  index, row in jsonObj.iterrows()]
+    process_repo(repo_details[0])
+
+    # with open(input_file,"r") as f:
+    #     reader = csv.reader(f)
+    #     repo_details = [(row['repo_name'],row['repo_url'],row['positive_case_methods']) for row in reader]
 
     t = time.time()
 
@@ -89,8 +98,8 @@ if __name__=="__main__":
     #     p.map(process_repo, repo_details)
 
     #Use MultiThread
-    with concurrent.futures.ThreadPoolExecutor(NUM_WORKERS) as executor:
-        executor.map(process_repo, repo_details)
+    #with concurrent.futures.ThreadPoolExecutor(NUM_WORKERS) as executor:
+        #executor.map(process_repo, repo_details) #This is where the "loop over repos" is happening
 
 
     # #Use Joblib
