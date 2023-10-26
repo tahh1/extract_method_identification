@@ -149,7 +149,7 @@ def train_rf(train_data, train_label, using_AE=True):
             batch_embeddings = bert.generate_embeddings(input_ids)
 
 
-        embeddings.append(batch_embeddings)
+        embeddings.append(batch_embeddings.cpu())
 
     data_rep_arr = np.concatenate(embeddings, axis=0)
 
@@ -269,7 +269,7 @@ def test_rf(test_data, test_label, model):
             batch_embeddings = bert.generate_embeddings(input_ids)
 
 
-        embeddings.append(batch_embeddings)
+        embeddings.append(batch_embeddings.cpu())
 
     data_rep_arr = np.concatenate(embeddings, axis=0)
 
