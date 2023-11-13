@@ -21,6 +21,7 @@ class RefMiner:
 
             try:
                 java_proc = subprocess.run(["java","-version"],capture_output=True, shell=False)
+                print(java_proc.stdout)
                 java_proc.check_returncode()
             except Exception as ex:
                 print("Java error")

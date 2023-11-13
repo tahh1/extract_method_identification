@@ -1,4 +1,5 @@
 import pydriller, json
+import os
 
 class MethodExtractor:
 
@@ -99,15 +100,15 @@ class MethodExtractor:
 
             len_pos_methods = len(self.pos_methods)
             
-            file_paths = [x.new_path for x in modified_file_list]
+            file_paths = [os.path.normpath(x.new_path) for x in modified_file_list]
             for pos_id,meta_data in enumerate(parsed_json_dict[commit.hash]["neg_method"]):
-                mod_file_index = file_paths.index(meta_data["filePath"])
+                mod_file_index = file_paths.index(os.path.normpath(meta_data["filePath"]))
                 mod_file = modified_file_list[mod_file_index]
 
                 extract_method_code = self.__split_and_extract_methods(mod_file.source_code_before,parsed_json_dict[commit.hash]["pos_method"][pos_id]["startLine"],parsed_json_dict[commit.hash]["pos_method"][pos_id]["endLine"])
                 if(extract_method_code in self.reference_methods):
-                    self.pos_methods.append((extract_method_code,commit_message))
-                    self.neg_methods.append((self.__split_and_extract_methods(mod_file.source_code,meta_data["startLine"],meta_data["endLine"], commit_message)))
+                    self.pos_methods.append({"body":extract_method_code,"commit_message":commit_message})
+                    self.neg_methods.append( {"body":self.__split_and_extract_methods(mod_file.source_code,meta_data["startLine"],meta_data["endLine"]),"message":commit_message} )
 
                 if len(self.pos_methods)>len_pos_methods:
                     print((len(self.pos_methods)-len_pos_methods)/len(mod_file.methods_before))

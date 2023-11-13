@@ -1,6 +1,6 @@
 import csv,time, sys, json, os, concurrent.futures
 from multiprocessing import Pool, Lock
-from pymongo import MongoClient
+#from pymongo import MongoClient
 from utils.RepoDownload import CloneRepo
 from refactoring_identifier.RefMiner import RefMiner
 from utils.file_folder_remover import Remover
@@ -47,7 +47,8 @@ def process_repo(repo_details):
     except Exception as e:
         print(f"Error extracting positive and negative methods for {repo_details[0]}")
         print(e)
-        return
+        raise 
+        #return
     
 
     #Store the methods
@@ -63,14 +64,14 @@ def process_repo(repo_details):
 
 
         # Locally in jsonl 
-        out_jsonl_path = os.path.join(os.environ['SLURM_TMPDIR'],'extract-method-identification',"data","output")
-
+        #out_jsonl_path = os.path.join(os.environ['SLURM_TMPDIR'],'extract-method-identification',"data","output")
+        out_jsonl_path = os.path.join(os.getcwd(),"data","output")
         if not os.path.exists(out_jsonl_path):
             os.mkdir(out_jsonl_path)
 
 
-        with open(os.path.join(out_jsonl_path,output_file_name), 'a') as f: # os.environ["output_file_name"] doesn't work in MP
-            f.write(json.dumps(db_dict) + "\n")
+        with open(os.path.join(out_jsonl_path,output_file_name), 'a',encoding='utf8') as f: # os.environ["output_file_name"] doesn't work in MP
+            f.write(json.dumps(db_dict, ensure_ascii=False) + "\n")
             f.flush()
             f.close()
     
@@ -79,13 +80,15 @@ def process_repo(repo_details):
 if __name__=="__main__":
 
     print("Start")
-    print(sys.argv[1])
     input_file = sys.argv[1]
     output_file_name = sys.argv[2]
 
     jsonObj = pd.read_json(path_or_buf=input_file, lines=True)
     repo_details = [(row['repo_name'], row['repo_url'], row['positive_case_methods']) for  index, row in jsonObj.iterrows()]
-    process_repo(repo_details[0])
+    for repos in repo_details:
+        process_repo(repo_details=repos)
+
+
 
     # with open(input_file,"r") as f:
     #     reader = csv.reader(f)
