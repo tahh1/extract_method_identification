@@ -7,6 +7,7 @@ from utils.file_folder_remover import Remover
 from utils.recreate_db_with_messages import MethodExtractor
 from joblib import Parallel, delayed
 import pandas as pd
+from tqdm import tqdm
 
 
 # Define the number of workers to use for parallel processing
@@ -85,7 +86,7 @@ if __name__=="__main__":
 
     jsonObj = pd.read_json(path_or_buf=input_file, lines=True)
     repo_details = [(row['repo_name'], row['repo_url'], row['positive_case_methods']) for  index, row in jsonObj.iterrows()]
-    for repos in repo_details:
+    for repos in tqdm(repo_details):
         process_repo(repo_details=repos)
 
 
