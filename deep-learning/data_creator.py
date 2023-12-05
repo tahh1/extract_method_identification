@@ -43,8 +43,8 @@ def __get_data_from_jsonl(data_file):
 
 def get_train_test_split(data, labels, test_ratio=0.2):
     train_data, test_data, train_label, test_label = train_test_split(data,labels, test_size=test_ratio, stratify=labels)
-    print(f"Training sample length - {len(train_data)}. Validation Sample length - {len(test_data)}")
-    print(f"Training label length - {len(train_label)}. Validation label length - {len(test_label)}")
+    print(f"Training sample length - {len(train_data)}. Test Sample length - {len(test_data)}")
+    print(f"Training label length - {len(train_label)}. Test label length - {len(test_label)}")
     return train_data, test_data, train_label, test_label
 
 def get_train_test_val_split(data, labels,val_ratio=0.2,test_ratio=0.1):
@@ -86,27 +86,24 @@ def save_nps(file_path, halfsize=True, split_by_size=True, rf= True, ae= True):
         data_rf = data[len(data)//2:]
         labels_rf= labels[len(labels)//2:]
         
-        rf_train_data, rf_val_data, rf_test_data ,rf_train_label, rf_val_label,rf_test_label = get_train_test_val_split(data_rf, labels_rf,val_ratio=0.1,test_ratio=0.2)
+        rf_train_data, rf_test_data, rf_train_label,rf_test_label = get_train_test_split(data_rf, labels_rf,test_ratio=0.2)
 
         rf_train_data_np = np.asarray(rf_train_data)
         rf_train_label_np = np.asarray(rf_train_label)
-        rf_val_data_np = np.asarray(rf_val_data)
-        rf_val_label_np = np.asarray(rf_val_label)
-        rf_test_data_np = np.asarray(rf_test_data)
-        rf_test_label_np = np.asarray(rf_test_label)
         if split_by_size:
             rf_test_data,rf_test_label = split_by_ratio(rf_test_data, rf_test_label)
-            rf_val_data,rf_val_label =   split_by_ratio(rf_val_data, rf_val_label)
+        rf_test_data_np = np.asarray(rf_test_data)
+        rf_test_label_np = np.asarray(rf_test_label)
 
 
         print("rf Train Data Shape",rf_train_data_np.shape)
         print("rf Train Label Shape", rf_train_label_np.shape)
 
-        print("rf val Data Shape",rf_val_data_np.shape)
-        print("rf val Label Shape", rf_val_label_np.shape)
+
         
         print("rf Test Data Shape",rf_test_data_np.shape)
         print("rf Test Label Shape", rf_test_label_np.shape)
+        print("rf test data ratio", len(np.nonzero(rf_test_label_np)[0]))
         with open ("../data/np_arrays/rf_train_data.npy","+wb") as f:
             np.save(f,rf_train_data_np)
 
@@ -119,30 +116,23 @@ def save_nps(file_path, halfsize=True, split_by_size=True, rf= True, ae= True):
         with open ("../data/np_arrays/rf_test_label.npy","+wb") as f:
             np.save(f,rf_test_label_np)
 
-        
-        with open ("../data/np_arrays/rf_val_data.npy","+wb") as f:
-            np.save(f,rf_val_data_np)
-
-        with open ("../data/np_arrays/rf_val_label.npy","+wb") as f:
-            np.save(f,rf_val_label_np)
-
+    
         del rf_train_data_np 
         del rf_train_label_np 
-        del rf_val_data_np 
-        del rf_val_label_np 
+
         del rf_test_data_np 
         del rf_test_label_np 
     if(ae):
         print("--ae--")
         data_ae = data[:len(data)//2]
         labels_ae = labels[:len(labels)//2]
-        ae_train_data, ae_test_data,ae_train_label, ae_test_label=get_train_test_split(data_ae, labels_ae, test_ratio=0.2)
+        ae_train_data, ae_test_data,ae_train_label, ae_test_label=get_train_test_split(data_ae, labels_ae, test_ratio=0.3)
         ae_train_data_np = np.asarray(ae_train_data)
         ae_train_label_np = np.asarray(ae_train_label)
+        # if split_by_size:
+        #     ae_test_data,ae_test_label = split_by_ratio(ae_test_data, ae_test_label)
         ae_test_data_np = np.asarray(ae_test_data)
         ae_test_label_np = np.asarray(ae_test_label)
-        if split_by_size:
-            ae_test_data,ae_test_label = split_by_ratio(ae_test_data, ae_test_label)
         print("ae Train Data Shape",ae_train_data_np.shape)
         print("ae Train Label Shape", ae_train_label_np.shape)
 

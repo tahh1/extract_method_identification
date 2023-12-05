@@ -8,6 +8,7 @@ from sklearn.model_selection import cross_val_score, GridSearchCV
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
 
 
 
@@ -226,7 +227,6 @@ def test_rf_ae(test_data, test_label, model):
 
         bottleneck_rep = get_bottleneck_representation(batch_embeddings,768,128)
 
-        # bottleneck_rep_list.append(batch_embeddings.cpu())
         bottleneck_rep_list.append(bottleneck_rep.cpu())
 
     bottleneck_rep_arr = np.concatenate(bottleneck_rep_list, axis=0)
@@ -237,6 +237,7 @@ def test_rf_ae(test_data, test_label, model):
     pred_label = model.predict(bottleneck_rep_arr)
 
     ac,pr,re,f1 = get_metrics_classicalml(test_label, pred_label)
+    cm = confusion_matrix(test_label, pred_label)
 
     print("Accuracy - ",round(ac,3))
     print("Precision - ",round(pr,3))
@@ -244,6 +245,9 @@ def test_rf_ae(test_data, test_label, model):
     print("F-1 - ",round(f1,3))
 
     print(classification_report(test_label,pred_label))
+    print("Confusion Matrix:")
+    print(cm)
+
 
 def test_rf(test_data, test_label, model):
 
@@ -274,11 +278,13 @@ def test_rf(test_data, test_label, model):
     data_rep_arr = np.concatenate(embeddings, axis=0)
 
     print("Label shape - ", test_label.shape)
-    print("Input shape - ", data_rep_arr .shape)
+    print("Input shape - ", data_rep_arr.shape)
 
     pred_label = model.predict(data_rep_arr)
 
     ac,pr,re,f1 = get_metrics_classicalml(test_label, pred_label)
+    cm = confusion_matrix(test_label, pred_label)
+
 
     print("Accuracy - ",round(ac,3))
     print("Precision - ",round(pr,3))
@@ -286,6 +292,8 @@ def test_rf(test_data, test_label, model):
     print("F-1 - ",round(f1,3))
 
     print(classification_report(test_label,pred_label))
+    print("Confusion Matrix:")
+    print(cm)
 
 
 if __name__=="__main__":
@@ -324,6 +332,13 @@ if __name__=="__main__":
 
     print("Testing...")
     test_rf(test_data_arr,test_label_arr, rf_model)
+
+
+
+
+
+
+
 
 
 
